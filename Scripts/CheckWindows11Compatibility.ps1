@@ -11,7 +11,7 @@ if (-not $isAdmin) {
 }
 
 # Start logging
-$logFile = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "$2"
+$logFile = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "Windows11_Compatibility_Check.log"
 Start-Transcript -Path $logFile -Force
 
 try {
@@ -43,17 +43,18 @@ try {
         $tpm = Get-WmiObject -Class Win32_Tpm -Namespace root\CIMV2\Security\MicrosoftTpm -ErrorAction Stop
         if ($tpm -ne $null) {
             $tpmEnabled = $tpm.IsEnabled_InitialValue
+            
             if ($tpm.SpecVersion -match "2\.0") {
                 $tpmVersion = "2.0"
             } else {
                 $tpmVersion = $tpm.SpecVersion
             }
             
-            Write-Host "TPM Present: Yes" -ForegroundColor Green
-            
             if ($tpmEnabled) {
+                Write-Host "TPM Present: Yes" -ForegroundColor Green
                 Write-Host "TPM Enabled: Yes" -ForegroundColor Green
             } else {
+                Write-Host "TPM Present: Yes" -ForegroundColor Green
                 Write-Host "TPM Enabled: No" -ForegroundColor Red
             }
             
@@ -114,10 +115,11 @@ try {
             Write-Host "Check the Windows 11 compatibility list for this specific CPU model" -ForegroundColor Yellow
         }
         
+        Write-Host "CPU Generation: $cpuGeneration" -ForegroundColor Cyan
         if ($cpuCompatible) {
             Write-Host "CPU Compatible: Yes" -ForegroundColor Green
         } else {
-            Write-Host "CPU Compatible: Unknown/No" -ForegroundColor Yellow
+            Write-Host "CPU Compatible: No" -ForegroundColor Red
         }
     } 
     catch {
@@ -135,6 +137,7 @@ try {
     Write-Host "Total RAM: $ramGB GB" -ForegroundColor White
     Write-Host "Minimum Required: 4 GB" -ForegroundColor White
     
+    Write-Host "RAM: $ramGB GB" -ForegroundColor Cyan
     if ($ramCompatible) {
         Write-Host "RAM Compatible: Yes" -ForegroundColor Green
     } else {
@@ -223,7 +226,7 @@ finally {
 # This script creates a simple autounattend.xml file for Windows 11
 
 # Start logging
-$logFile = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "$2"
+$logFile = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "Windows11_AnswerFile_Creation.log"
 Start-Transcript -Path $logFile -Force
 
 try {
@@ -532,7 +535,7 @@ finally {
 # This script mounts a Windows 11 ISO and extracts any updates (MSU files)
 
 # Start logging
-$logFile = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "$2"
+$logFile = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "Windows11_Update_Extraction.log"
 Start-Transcript -Path $logFile -Force
 
 try {
@@ -705,7 +708,7 @@ finally {
 # This script installs Windows updates (.msu and .cab files) from the ExtractedUpdates folder
 
 # Start logging
-$logFile = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "$2"
+$logFile = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "Windows11_Update_Installation.log"
 Start-Transcript -Path $logFile -Force
 
 try {
@@ -976,7 +979,7 @@ finally {
 # This script mounts the Windows 11 ISO and runs setup in upgrade-only mode
 
 # Start logging
-$logFile = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "$2"
+$logFile = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "Windows11_Upgrade.log"
 Start-Transcript -Path $logFile -Force
 
 try {
@@ -993,9 +996,20 @@ try {
         $tpm = Get-WmiObject -Class Win32_Tpm -Namespace root\CIMV2\Security\MicrosoftTpm
         if ($tpm -ne $null) {
             $tpmEnabled = $tpm.IsEnabled_InitialValue
-            $tpmVersion = if ($tpm.SpecVersion -match "2\.0") { "2.0" } else { $tpm.SpecVersion }
-            Write-Host "TPM Status: $($tpmEnabled ? 'Enabled' : 'Disabled')" -ForegroundColor ($tpmEnabled ? 'Green' : 'Red')
-            Write-Host "TPM Version: $tpmVersion" -ForegroundColor ($tpmVersion -eq "2.0" ? 'Green' : 'Red')
+            
+            if ($tpmEnabled) {
+                Write-Host "TPM Status: Enabled" -ForegroundColor Green
+            } else {
+                Write-Host "TPM Status: Disabled" -ForegroundColor Red
+            }
+            
+            $tpmVersion = $tpm.SpecVersion
+            
+            if ($tpmVersion -eq "2.0") {
+                Write-Host "TPM Version: $tpmVersion" -ForegroundColor Green
+            } else {
+                Write-Host "TPM Version: $tpmVersion" -ForegroundColor Red
+            }
         } else {
             Write-Host "TPM Status: Not detected" -ForegroundColor Red
         }
@@ -1021,7 +1035,11 @@ try {
         }
         
         Write-Host "CPU Generation: $gen" -ForegroundColor Cyan
-        Write-Host "CPU Compatible: $($cpuCompatible ? 'Yes' : 'No')" -ForegroundColor ($cpuCompatible ? 'Green' : 'Red')
+        if ($cpuCompatible) {
+            Write-Host "CPU Compatible: Yes" -ForegroundColor Green
+        } else {
+            Write-Host "CPU Compatible: No" -ForegroundColor Red
+        }
     } catch {
         Write-Host "CPU Status: Error checking CPU - $($_.Exception.Message)" -ForegroundColor Red
     }
@@ -1030,7 +1048,11 @@ try {
     $ramGB = [math]::Round((Get-WmiObject -Class Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)
     $ramCompatible = $ramGB -ge 4
     Write-Host "RAM: $ramGB GB" -ForegroundColor Cyan
-    Write-Host "RAM Compatible: $($ramCompatible ? 'Yes' : 'No')" -ForegroundColor ($ramCompatible ? 'Green' : 'Red')
+    if ($ramCompatible) {
+        Write-Host "RAM Compatible: Yes" -ForegroundColor Green
+    } else {
+        Write-Host "RAM Compatible: No" -ForegroundColor Red
+    }
     
     # Overall compatibility check
     $isCompatible = $tpmEnabled -and $cpuCompatible -and $ramCompatible
@@ -1079,7 +1101,7 @@ System meets Windows 11 requirements." -ForegroundColor Green
     Write-Host "ISO mounted successfully at drive ${driveLetter}:"
     
     # Check if setup.exe exists
-    $setupPath = "${driveLetter}:\\setup.exe"
+    $setupPath = "${driveLetter}:\setup.exe"
     if (-not (Test-Path $setupPath)) {
         throw "setup.exe not found at $setupPath"
     }
@@ -1127,5 +1149,3 @@ catch {
 finally {
     Stop-Transcript
 }
-
-
