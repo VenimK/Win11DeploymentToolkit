@@ -177,37 +177,39 @@ try {
                 # Download the file
                 $downloadPath = Join-Path -Path $downloadsFolder -ChildPath "Win11DeploymentToolkit_v$latestVersion.zip"
                 
-                # Use Invoke-WebRequest to download the file with progress reporting
-                $webClient = New-Object System.Net.WebClient
-                $webClient.DownloadFileCompleted += {
-                    param($sender, $e)
-                    Write-Host "`nDownload complete!" -ForegroundColor Green
+                # Use Invoke-WebRequest to download the file with progress
+                Write-Host "Downloading from: $downloadUrl" -ForegroundColor Gray
+                Write-Host "Saving to: $downloadPath" -ForegroundColor Gray
+                Write-Host "This may take a few minutes depending on your connection speed..." -ForegroundColor Yellow
+                
+                # Create a simple progress indicator
+                $downloadStartTime = Get-Date
+                
+                try {
+                    # Try to use Invoke-WebRequest with progress
+                    $ProgressPreference = 'Continue'
+                    Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath -TimeoutSec 300
+                }
+                catch {
+                    Write-Host "Error with Invoke-WebRequest: $($_.Exception.Message)" -ForegroundColor Red
+                    Write-Host "Falling back to alternative download method..." -ForegroundColor Yellow
+                    
+                    # Fallback to .NET WebClient
+                    $webClient = New-Object System.Net.WebClient
+                    $webClient.DownloadFile($downloadUrl, $downloadPath)
+                }
+                
+                $downloadEndTime = Get-Date
+                $downloadDuration = $downloadEndTime - $downloadStartTime
+                
+                if (Test-Path -Path $downloadPath) {
+                    Write-Host "`nDownload complete! (Time taken: $($downloadDuration.TotalSeconds.ToString("0.00")) seconds)" -ForegroundColor Green
                     Write-Host "File saved to: $downloadPath" -ForegroundColor Green
                     Write-Host "Please extract the downloaded file and replace your current toolkit files." -ForegroundColor Yellow
                     Write-Host "Don't forget to back up any custom configurations before updating." -ForegroundColor Yellow
                 }
-                
-                $totalBytes = 0
-                $receivedBytes = 0
-                
-                $webClient.DownloadProgressChanged += {
-                    param($sender, $e)
-                    $totalBytes = $e.TotalBytesToReceive
-                    $receivedBytes = $e.BytesReceived
-                    $percentComplete = [math]::Round(($receivedBytes / $totalBytes) * 100)
-                    
-                    if ($totalBytes -gt 0) {
-                        $progressBar = "[" + ("#" * [math]::Floor($percentComplete / 2)) + (" " * [math]::Ceiling((100 - $percentComplete) / 2)) + "]"
-                        Write-Host "`rDownloading update: $progressBar $percentComplete% ($([math]::Round($receivedBytes / 1MB, 2)) MB / $([math]::Round($totalBytes / 1MB, 2)) MB)" -NoNewline
-                    }
-                }
-                
-                # Start the download
-                $webClient.DownloadFileAsync([System.Uri]$downloadUrl, $downloadPath)
-                
-                # Wait for the download to complete
-                while ($webClient.IsBusy) {
-                    Start-Sleep -Milliseconds 100
+                else {
+                    throw "Download failed: File not found at expected location."
                 }
             }
             catch {

@@ -5,3 +5,4 @@
 /ExtractedUpdates/**/*.cab
 /ExtractedUpdates/**/*.msu
 /ExtractedUpdates/**/*.exe
+/Downloads/*
