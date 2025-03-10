@@ -7,3 +7,5 @@
 /ExtractedUpdates/**/*.exe
 /Downloads/*
 Win11DeploymentToolkit_v1.2.0.zip
+Scripts/Update_Extraction_Log.txt
+Scripts/Windows11_Compatibility_Check.txt
