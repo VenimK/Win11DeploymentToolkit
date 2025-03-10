@@ -41,7 +41,7 @@ try {
     
     try {
         $tpm = Get-WmiObject -Class Win32_Tpm -Namespace root\CIMV2\Security\MicrosoftTpm -ErrorAction Stop
-        if ($tpm -ne $null) {
+        if ($null -ne $tpm) {
             $tpmEnabled = $tpm.IsEnabled_InitialValue
             if ($tpm.SpecVersion -match "2\.0") {
                 $tpmVersion = "2.0"
@@ -49,11 +49,11 @@ try {
                 $tpmVersion = $tpm.SpecVersion
             }
             
-            Write-Host "TPM Present: Yes" -ForegroundColor Green
-            
             if ($tpmEnabled) {
+                Write-Host "TPM Present: Yes" -ForegroundColor Green
                 Write-Host "TPM Enabled: Yes" -ForegroundColor Green
             } else {
+                Write-Host "TPM Present: Yes" -ForegroundColor Green
                 Write-Host "TPM Enabled: No" -ForegroundColor Red
             }
             
@@ -189,7 +189,7 @@ try {
     Write-Host ""
     
     # Overall compatibility check
-    $isCompatible = $tpmEnabled -and $cpuCompatible -and $ramCompatible -and $storageCompatible
+    $isCompatible = $tpmEnabled -and $cpuCompatible -and $ramCompatible
     
     Write-Host "OVERALL COMPATIBILITY" -ForegroundColor Cyan
     Write-Host "---------------------" -ForegroundColor Cyan
@@ -824,7 +824,7 @@ try {
     $rebootRequired = $false
     
     # Function to check if a string contains any of the patterns
-    function Contains-AnyPattern {
+    function Test-ContainsAnyPattern {
         param (
             [string]$InputString,
             [string[]]$Patterns
@@ -852,7 +852,7 @@ try {
         $updatePath = $update.FullName
         
         # Check if this might be an IE-related update
-        $isIERelated = Contains-AnyPattern -InputString $updateName -Patterns $iePatterns
+        $isIERelated = Test-ContainsAnyPattern -InputString $updateName -Patterns $iePatterns
         
         if ($isIERelated) {
             Write-Host "Detected possible Internet Explorer related update: $updateName" -ForegroundColor Yellow
@@ -991,11 +991,21 @@ try {
     $tpmEnabled = $false
     try {
         $tpm = Get-WmiObject -Class Win32_Tpm -Namespace root\CIMV2\Security\MicrosoftTpm
-        if ($tpm -ne $null) {
+        if ($null -ne $tpm) {
             $tpmEnabled = $tpm.IsEnabled_InitialValue
             $tpmVersion = if ($tpm.SpecVersion -match "2\.0") { "2.0" } else { $tpm.SpecVersion }
-            Write-Host "TPM Status: $($tpmEnabled ? 'Enabled' : 'Disabled')" -ForegroundColor ($tpmEnabled ? 'Green' : 'Red')
-            Write-Host "TPM Version: $tpmVersion" -ForegroundColor ($tpmVersion -eq "2.0" ? 'Green' : 'Red')
+            
+            if ($tpmEnabled) {
+                Write-Host "TPM Status: Enabled" -ForegroundColor Green
+            } else {
+                Write-Host "TPM Status: Disabled" -ForegroundColor Red
+            }
+            
+            if ($tpmVersion -eq "2.0") {
+                Write-Host "TPM Version: $tpmVersion" -ForegroundColor Green
+            } else {
+                Write-Host "TPM Version: $tpmVersion" -ForegroundColor Red
+            }
         } else {
             Write-Host "TPM Status: Not detected" -ForegroundColor Red
         }
@@ -1021,7 +1031,12 @@ try {
         }
         
         Write-Host "CPU Generation: $gen" -ForegroundColor Cyan
-        Write-Host "CPU Compatible: $($cpuCompatible ? 'Yes' : 'No')" -ForegroundColor ($cpuCompatible ? 'Green' : 'Red')
+        
+        if ($cpuCompatible) {
+            Write-Host "CPU Compatible: Yes" -ForegroundColor Green
+        } else {
+            Write-Host "CPU Compatible: No" -ForegroundColor Red
+        }
     } catch {
         Write-Host "CPU Status: Error checking CPU - $($_.Exception.Message)" -ForegroundColor Red
     }
@@ -1030,7 +1045,12 @@ try {
     $ramGB = [math]::Round((Get-WmiObject -Class Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)
     $ramCompatible = $ramGB -ge 4
     Write-Host "RAM: $ramGB GB" -ForegroundColor Cyan
-    Write-Host "RAM Compatible: $($ramCompatible ? 'Yes' : 'No')" -ForegroundColor ($ramCompatible ? 'Green' : 'Red')
+    
+    if ($ramCompatible) {
+        Write-Host "RAM Compatible: Yes" -ForegroundColor Green
+    } else {
+        Write-Host "RAM Compatible: No" -ForegroundColor Red
+    }
     
     # Overall compatibility check
     $isCompatible = $tpmEnabled -and $cpuCompatible -and $ramCompatible
@@ -1079,7 +1099,7 @@ System meets Windows 11 requirements." -ForegroundColor Green
     Write-Host "ISO mounted successfully at drive ${driveLetter}:"
     
     # Check if setup.exe exists
-    $setupPath = "${driveLetter}:\\setup.exe"
+    $setupPath = "${driveLetter}:\setup.exe"
     if (-not (Test-Path $setupPath)) {
         throw "setup.exe not found at $setupPath"
     }
@@ -1127,5 +1147,3 @@ catch {
 finally {
     Stop-Transcript
 }
-
-

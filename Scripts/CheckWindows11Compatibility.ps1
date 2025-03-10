@@ -827,7 +827,7 @@ try {
     $rebootRequired = $false
     
     # Function to check if a string contains any of the patterns
-    function Contains-AnyPattern {
+    function Test-ContainsAnyPattern {
         param (
             [string]$InputString,
             [string[]]$Patterns
@@ -855,7 +855,7 @@ try {
         $updatePath = $update.FullName
         
         # Check if this might be an IE-related update
-        $isIERelated = Contains-AnyPattern -InputString $updateName -Patterns $iePatterns
+        $isIERelated = Test-ContainsAnyPattern -InputString $updateName -Patterns $iePatterns
         
         if ($isIERelated) {
             Write-Host "Detected possible Internet Explorer related update: $updateName" -ForegroundColor Yellow

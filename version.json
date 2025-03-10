@@ -1,0 +1,15 @@
+{
+    "version": "1.1.0",
+    "releaseDate": "2025-03-01",
+    "downloadUrl": "https://github.com/windows11toolkit/releases/latest",
+    "changelogUrl": "https://github.com/windows11toolkit/releases/latest/changelog",
+    "changes": [
+        "Added drive letter independence for better portability",
+        "Fixed PowerShell lint warnings and improved code quality",
+        "Added progress indicators for long-running operations",
+        "Enhanced documentation with troubleshooting steps",
+        "Added backup/restore functionality",
+        "Added update checker"
+    ],
+    "minRequiredVersion": "1.0.0"
+}

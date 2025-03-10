@@ -77,7 +77,6 @@ try {
     Write-Host "CPU CHECK" -ForegroundColor Cyan
     Write-Host "---------" -ForegroundColor Cyan
     $cpuCompatible = $false
-    $cpuGeneration = "Unknown"
     
     try {
         $processor = Get-WmiObject -Class Win32_Processor
@@ -837,7 +836,7 @@ try {
     $rebootRequired = $false
     
     # Function to check if a string contains any of the patterns
-    function Contains-AnyPattern {
+    function Test-ContainsAnyPattern {
         param (
             [string]$InputString,
             [string[]]$Patterns
@@ -859,18 +858,44 @@ try {
         "Internet-Explorer"
     )
     
+    # Add progress indicator function
+    function Show-Progress {
+        param (
+            [int]$Current,
+            [int]$Total,
+            [string]$Activity,
+            [string]$Status
+        )
+        
+        $percentComplete = [math]::Round(($Current / $Total) * 100)
+        $progressBar = "[" + ("#" * [math]::Floor($percentComplete / 2)) + (" " * [math]::Ceiling((100 - $percentComplete) / 2)) + "]"
+        
+        Write-Host "`r$Activity - $Status`: $progressBar $percentComplete% ($Current/$Total)" -NoNewline
+        
+        if ($Current -eq $Total) {
+            Write-Host "`r$Activity - $Status`: $progressBar $percentComplete% ($Current/$Total) - Complete!     " 
+        }
+    }
+    
     # Process each update
+    $totalUpdates = $updatesToInstall.Count
+    $currentUpdate = 0
+    
     foreach ($update in $updatesToInstall) {
+        $currentUpdate++
         $updateName = $update.Name
         $updatePath = $update.FullName
         
+        # Show progress indicator
+        Show-Progress -Current $currentUpdate -Total $totalUpdates -Activity "Installing Updates" -Status "Processing $updateName"
+        
         # Check if this might be an IE-related update
-        $isIERelated = Contains-AnyPattern -InputString $updateName -Patterns $iePatterns
+        $isIERelated = Test-ContainsAnyPattern -InputString $updateName -Patterns $iePatterns
         
         if ($isIERelated) {
             Write-Host "Detected possible Internet Explorer related update: $updateName" -ForegroundColor Yellow
             Write-Host "These updates often fail on newer Windows versions where IE is deprecated." -ForegroundColor Yellow
-            Write-Host "Do you want to skip this update? (Y/N, default: Y)"
+            Write-Host "Do you want to skip this update? (Y/N)"
             $skipIEUpdate = Read-Host
             
             if ($skipIEUpdate -ne "N" -and $skipIEUpdate -ne "n") {

@@ -18,11 +18,12 @@ echo  [4] Install Extracted Updates
 echo  [5] Create Custom Answer File
 echo  [6] View Documentation
 echo  [7] Fix Toolkit Paths
-echo  [8] Exit
+echo  [8] Check for Toolkit Updates
+echo  [9] Exit
 echo.
 echo ===============================================================================
 echo.
-set /p choice="Enter your choice (1-8): "
+set /p choice="Enter your choice (1-9): "
 
 if "%choice%"=="1" goto UPGRADE
 if "%choice%"=="2" goto COMPATIBILITY
@@ -31,7 +32,8 @@ if "%choice%"=="4" goto INSTALL_UPDATES
 if "%choice%"=="5" goto ANSWER
 if "%choice%"=="6" goto DOCS
 if "%choice%"=="7" goto FIX_PATHS
-if "%choice%"=="8" goto EXIT
+if "%choice%"=="8" goto CHECK_UPDATES
+if "%choice%"=="9" goto EXIT
 
 echo Invalid choice. Please try again.
 timeout /t 2 >nul
@@ -165,6 +167,23 @@ echo.
 echo  Running path fixer...
 echo.
 start "" "%~dp0FixToolkitPaths.bat"
+goto MENU
+
+:CHECK_UPDATES
+cls
+echo ===============================================================================
+echo                         CHECK FOR TOOLKIT UPDATES
+echo ===============================================================================
+echo.
+echo  This will check if a newer version of the toolkit is available.
+echo  Internet connection is required for this operation.
+echo.
+echo  Launching Update Checker with elevated privileges...
+echo.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& {Start-Process '%~dp0CheckForUpdates.bat' -Verb RunAs}"
+echo.
+echo  Returning to main menu...
+timeout /t 3 >nul
 goto MENU
 
 :EXIT
