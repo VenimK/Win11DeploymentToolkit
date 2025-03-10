@@ -347,6 +347,23 @@
             <li>Provide download links for the latest version</li>
         </ul>
         <p><strong>Note:</strong> Requires internet connection to check for updates.</p>
+        
+        <h4>How the Update System Works</h4>
+        <p>The update checker uses the following mechanism to stay current:</p>
+        <ol>
+            <li><strong>Online Version Check:</strong> The script connects to the official Windows 11 Deployment Toolkit repository to check for the latest version information.</li>
+            <li><strong>Version Comparison:</strong> It compares your local version with the latest available version using semantic versioning (Major.Minor.Patch).</li>
+            <li><strong>Automatic Notification:</strong> If a newer version is available, you'll be notified with details about the update and provided with download links.</li>
+            <li><strong>Fallback Mechanism:</strong> If the online check fails (e.g., due to network issues), the script will fall back to local version information.</li>
+        </ol>
+        
+        <p><strong>Technical Details:</strong></p>
+        <ul>
+            <li>The current version is stored in the CheckForToolkitUpdates.ps1 script.</li>
+            <li>The latest version information is retrieved from an online repository using PowerShell's Invoke-RestMethod.</li>
+            <li>Version comparison follows semantic versioning principles (e.g., 1.2.0 is newer than 1.1.9).</li>
+            <li>The update system is drive-letter independent, following the toolkit's design principles.</li>
+        </ul>
     </div>
     
     <hr>
