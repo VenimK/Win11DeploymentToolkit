@@ -4,10 +4,6 @@
 # Ensure we're running as admin
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-# For testing purposes, we'll bypass the admin check
-# In production, remove this line and uncomment the if block below
-# $isAdmin = $true
-
 if (-not $isAdmin) {
     Write-Host "This script needs to be run as Administrator. Please restart with admin privileges." -ForegroundColor Red
     Write-Host "You can do this by:" -ForegroundColor Yellow
@@ -24,6 +20,7 @@ $logFolder = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocati
 if (-not (Test-Path -Path $logFolder)) {
     New-Item -Path $logFolder -ItemType Directory -Force | Out-Null
 }
+
 $logFile = Join-Path -Path $logFolder -ChildPath "UpdateCheck_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 Start-Transcript -Path $logFile -Force
 
@@ -43,7 +40,7 @@ try {
     $branch = "main"
     $filePath = "version.json"
     
-    # For demonstration purposes, we'll use the local file as a fallback
+    # For fallback purposes, we'll use the local file
     $localVersionInfoPath = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "version.json"
     
     # Function to show progress
@@ -76,52 +73,53 @@ try {
     try {
         Write-Host "Attempting to check for online updates..." -ForegroundColor Yellow
         
-        # First try GitHub API
+        # Try GitHub API
         try {
             Write-Host "Connecting to GitHub repository..." -ForegroundColor Yellow
             
-            # Check if we can connect to GitHub at all
-            $repoUrl = "https://github.com/$repoOwner/$repoName"
-            Write-Host "Testing connection to: $repoUrl" -ForegroundColor Gray
+            # Use GitHub API to get the file content
+            $apiUrl = "https://api.github.com/repos/$repoOwner/$repoName/contents/$filePath?ref=$branch"
+            Write-Host "Connecting to: $apiUrl" -ForegroundColor Gray
             
-            # Use local version file as we know it exists
-            Write-Host "Using local version file for update check." -ForegroundColor Yellow
-            $versionInfo = Get-Content -Path $localVersionInfoPath -Raw | ConvertFrom-Json
+            # Get the file metadata from GitHub API
+            $response = Invoke-RestMethod -Uri $apiUrl -TimeoutSec 10 -ErrorAction Stop
             
-            Write-Host "`nNOTE: For a production environment, the update checker would:" -ForegroundColor Cyan
-            Write-Host "1. Connect to your GitHub repository at $repoUrl" -ForegroundColor Cyan
-            Write-Host "2. Download the version.json file from the $branch branch" -ForegroundColor Cyan
-            Write-Host "3. Compare the online version with the local version" -ForegroundColor Cyan
-            Write-Host "4. Notify users when updates are available" -ForegroundColor Cyan
-            Write-Host "`nTo fully implement this functionality:" -ForegroundColor Cyan
-            Write-Host "1. Ensure your GitHub repository is public or provide appropriate authentication" -ForegroundColor Cyan
-            Write-Host "2. Keep the version.json file updated with each new release" -ForegroundColor Cyan
+            # The content is base64 encoded, so we need to decode it
+            $content = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($response.content))
+            
+            # Convert the JSON content to an object
+            $versionInfo = $content | ConvertFrom-Json
+            
+            Write-Host "Successfully connected to GitHub repository." -ForegroundColor Green
         }
         catch {
-            Write-Host "Could not connect to GitHub. Using local version file." -ForegroundColor Yellow
-            if (Test-Path -Path $localVersionInfoPath) {
-                $versionInfo = Get-Content -Path $localVersionInfoPath -Raw | ConvertFrom-Json
-                $usingLocalFile = $true
+            # Try raw GitHub content as fallback
+            try {
+                Write-Host "GitHub API connection failed. Trying raw content..." -ForegroundColor Yellow
+                
+                $rawUrl = "https://raw.githubusercontent.com/$repoOwner/$repoName/$branch/$filePath"
+                Write-Host "Connecting to: $rawUrl" -ForegroundColor Gray
+                
+                $versionInfo = Invoke-RestMethod -Uri $rawUrl -TimeoutSec 10 -ErrorAction Stop
+                
+                Write-Host "Successfully connected to GitHub raw content." -ForegroundColor Green
             }
-            else {
-                throw "Could not access version information from any source."
+            catch {
+                throw "Could not connect to GitHub repository using any method."
             }
         }
     }
     catch {
-        Write-Host "Error checking for updates: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "Using local version information..." -ForegroundColor Yellow
+        Write-Host "Could not connect to online update server: $($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host "Falling back to local version information..." -ForegroundColor Yellow
         
         if (Test-Path -Path $localVersionInfoPath) {
             $versionInfo = Get-Content -Path $localVersionInfoPath -Raw | ConvertFrom-Json
             $usingLocalFile = $true
+            Write-Host "Using local version information." -ForegroundColor Yellow
         }
         else {
-            Write-Host "Could not access version information from any source." -ForegroundColor Red
-            Write-Host "Please check that the version.json file exists in the toolkit directory." -ForegroundColor Red
-            Write-Host "Press any key to exit..."
-            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-            exit
+            throw "Could not access version information from any source."
         }
     }
     
@@ -136,7 +134,7 @@ try {
     Write-Host "Release date: $releaseDate" -ForegroundColor White
     
     if ($usingLocalFile) {
-        Write-Host "`nNOTE: Using local version information for demonstration." -ForegroundColor Yellow
+        Write-Host "`nNOTE: Using local version information. Online check failed." -ForegroundColor Yellow
     }
     
     # Compare versions
@@ -169,17 +167,54 @@ try {
         if ($downloadPrompt -eq "Y" -or $downloadPrompt -eq "y") {
             Write-Host "`nStarting download..." -ForegroundColor Yellow
             
-            # In a real implementation, this would download the update
-            # For demonstration, we'll simulate a download
-            $downloadSteps = 10
-            for ($i = 1; $i -le $downloadSteps; $i++) {
-                Show-Progress -Current $i -Total $downloadSteps -Activity "Downloading Update" -Status "Transferring data"
-                Start-Sleep -Milliseconds 500
+            try {
+                # Create a downloads folder if it doesn't exist
+                $downloadsFolder = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "Downloads"
+                if (-not (Test-Path -Path $downloadsFolder)) {
+                    New-Item -Path $downloadsFolder -ItemType Directory -Force | Out-Null
+                }
+                
+                # Download the file
+                $downloadPath = Join-Path -Path $downloadsFolder -ChildPath "Win11DeploymentToolkit_v$latestVersion.zip"
+                
+                # Use Invoke-WebRequest to download the file with progress reporting
+                $webClient = New-Object System.Net.WebClient
+                $webClient.DownloadFileCompleted += {
+                    param($sender, $e)
+                    Write-Host "`nDownload complete!" -ForegroundColor Green
+                    Write-Host "File saved to: $downloadPath" -ForegroundColor Green
+                    Write-Host "Please extract the downloaded file and replace your current toolkit files." -ForegroundColor Yellow
+                    Write-Host "Don't forget to back up any custom configurations before updating." -ForegroundColor Yellow
+                }
+                
+                $totalBytes = 0
+                $receivedBytes = 0
+                
+                $webClient.DownloadProgressChanged += {
+                    param($sender, $e)
+                    $totalBytes = $e.TotalBytesToReceive
+                    $receivedBytes = $e.BytesReceived
+                    $percentComplete = [math]::Round(($receivedBytes / $totalBytes) * 100)
+                    
+                    if ($totalBytes -gt 0) {
+                        $progressBar = "[" + ("#" * [math]::Floor($percentComplete / 2)) + (" " * [math]::Ceiling((100 - $percentComplete) / 2)) + "]"
+                        Write-Host "`rDownloading update: $progressBar $percentComplete% ($([math]::Round($receivedBytes / 1MB, 2)) MB / $([math]::Round($totalBytes / 1MB, 2)) MB)" -NoNewline
+                    }
+                }
+                
+                # Start the download
+                $webClient.DownloadFileAsync([System.Uri]$downloadUrl, $downloadPath)
+                
+                # Wait for the download to complete
+                while ($webClient.IsBusy) {
+                    Start-Sleep -Milliseconds 100
+                }
             }
-            
-            Write-Host "`nDownload complete!" -ForegroundColor Green
-            Write-Host "Please extract the downloaded file and replace your current toolkit files." -ForegroundColor Yellow
-            Write-Host "Don't forget to back up any custom configurations before updating." -ForegroundColor Yellow
+            catch {
+                Write-Host "`nError downloading update: $($_.Exception.Message)" -ForegroundColor Red
+                Write-Host "You can download the update manually from:" -ForegroundColor Yellow
+                Write-Host $downloadUrl -ForegroundColor Cyan
+            }
         }
         else {
             Write-Host "`nUpdate download skipped. You can download the update later from:" -ForegroundColor Yellow
@@ -193,7 +228,7 @@ try {
     Write-Host "`nUpdate check completed at $(Get-Date)" -ForegroundColor Green
 }
 catch {
-    Write-Host "Error parsing version information: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Error checking for updates: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "Please check manually for updates at the toolkit's repository." -ForegroundColor Yellow
 }
 finally {
