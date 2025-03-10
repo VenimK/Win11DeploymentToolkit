@@ -551,10 +551,10 @@ try {
     $possibleIsoFolders = @(
         # Check in the toolkit folder
         (Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "Windows11"),
-        # Check in the original E:\ location
-        "E:\Windows11",
+        # Check in the root of the current drive
+        "$($env:SystemDrive)\Windows11",
         # Check in other possible locations
-        "E:\Windows11_24H2"
+        "$($env:SystemDrive)\Windows11_24H2"
     )
     
     $isoFolder = $null

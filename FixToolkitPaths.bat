@@ -16,22 +16,25 @@ if not exist "%~dp0Windows11" (
     echo.
 )
 
+REM Get the current drive letter
+set CURRENT_DRIVE=%~d0
+
 REM Check for original Windows11 folder
-if exist "E:\Windows11" (
-    echo Found Windows11 folder at E:\Windows11
+if exist "%CURRENT_DRIVE%\Windows11" (
+    echo Found Windows11 folder at %CURRENT_DRIVE%\Windows11
     
     REM Check for ISO files
     set FOUND_ISO=0
-    for %%i in (E:\Windows11\*.iso) do (
+    for %%i in (%CURRENT_DRIVE%\Windows11\*.iso) do (
         echo - Found ISO: %%~nxi
         set FOUND_ISO=1
     )
     
     if %FOUND_ISO%==0 (
-        echo No ISO files found in E:\Windows11
+        echo No ISO files found in %CURRENT_DRIVE%\Windows11
     ) else (
         echo Creating symbolic link to ISO files...
-        for %%i in (E:\Windows11\*.iso) do (
+        for %%i in (%CURRENT_DRIVE%\Windows11\*.iso) do (
             echo - Copying reference to: %%~nxi
             if not exist "%~dp0Windows11\%%~nxi" (
                 mklink "%~dp0Windows11\%%~nxi" "%%i" >nul 2>&1
@@ -52,25 +55,25 @@ if exist "E:\Windows11" (
         )
     )
 ) else (
-    echo Windows11 folder not found at E:\Windows11
+    echo Windows11 folder not found at %CURRENT_DRIVE%\Windows11
 )
 
-REM Check for Windows11_24H2 folder
-if exist "E:\Windows11_24H2" (
-    echo Found Windows11_24H2 folder at E:\Windows11_24H2
+REM Check for original Windows11_24H2 folder
+if exist "%CURRENT_DRIVE%\Windows11_24H2" (
+    echo Found Windows11_24H2 folder at %CURRENT_DRIVE%\Windows11_24H2
     
     REM Check for ISO files
     set FOUND_ISO=0
-    for %%i in (E:\Windows11_24H2\*.iso) do (
+    for %%i in (%CURRENT_DRIVE%\Windows11_24H2\*.iso) do (
         echo - Found ISO: %%~nxi
         set FOUND_ISO=1
     )
     
     if %FOUND_ISO%==0 (
-        echo No ISO files found in E:\Windows11_24H2
+        echo No ISO files found in %CURRENT_DRIVE%\Windows11_24H2
     ) else (
         echo Creating symbolic link to ISO files...
-        for %%i in (E:\Windows11_24H2\*.iso) do (
+        for %%i in (%CURRENT_DRIVE%\Windows11_24H2\*.iso) do (
             echo - Copying reference to: %%~nxi
             if not exist "%~dp0Windows11\%%~nxi" (
                 mklink "%~dp0Windows11\%%~nxi" "%%i" >nul 2>&1
@@ -91,23 +94,30 @@ if exist "E:\Windows11_24H2" (
         )
     )
 ) else (
-    echo Windows11_24H2 folder not found at E:\Windows11_24H2
+    echo Windows11_24H2 folder not found at %CURRENT_DRIVE%\Windows11_24H2
 )
 
-REM Check for ExtractedUpdates folder
-if not exist "%~dp0ExtractedUpdates" (
-    echo Creating ExtractedUpdates folder...
-    mkdir "%~dp0ExtractedUpdates" 2>nul
+REM Check if we have any ISO files in the toolkit Windows11 folder
+set FOUND_ISO=0
+for %%i in ("%~dp0Windows11\*.iso") do (
+    echo Found ISO file in toolkit Windows11 folder: %%~nxi
+    set FOUND_ISO=1
+)
+
+if %FOUND_ISO%==0 (
     echo.
+    echo No Windows 11 ISO files found!
+    echo Please place a Windows 11 ISO file in one of these locations:
+    echo 1. Make sure it's located at %CURRENT_DRIVE%\Windows11 or %~dp0Windows11
+    echo.
+    echo After adding the ISO file, run this tool again.
+    echo.
+    echo To use the toolkit, navigate to %~dp0 and run MainMenu.bat
+) else (
+    echo.
+    echo Path fixing complete!
+    echo You can now use the Windows 11 Deployment Toolkit.
 )
 
-echo.
-echo Windows 11 Deployment Toolkit paths have been fixed.
-echo.
-echo If you have a Windows11 folder with ISO files:
-echo 1. Make sure it's located at E:\Windows11 or E:\Win11DeploymentToolkit\Windows11
-echo 2. The folder should contain your Windows 11 ISO file(s)
-echo.
-echo To use the toolkit, navigate to E:\Win11DeploymentToolkit and run MainMenu.bat
 echo.
 pause

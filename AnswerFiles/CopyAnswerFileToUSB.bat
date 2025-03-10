@@ -20,11 +20,11 @@ echo.
 set /p choice=Enter your choice (1 or 2): 
 
 if "%choice%"=="1" (
-    copy /y "E:\\Win11DeploymentToolkit\\AnswerFiles\\autounattend.xml" %drive%:\autounattend.xml
+    copy /y "%~dp0..\AnswerFiles\autounattend.xml" %drive%:\autounattend.xml
     echo.
     echo Standard answer file copied to %drive%:\autounattend.xml
 ) else if "%choice%"=="2" (
-    copy /y "" %drive%:\autounattend.xml
+    copy /y "%~dp0..\AnswerFiles\autounattend.xml" %drive%:\autounattend.xml
     echo.
     echo Upgrade-only answer file copied to %drive%:\autounattend.xml
 ) else (
