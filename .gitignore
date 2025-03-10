@@ -2,3 +2,6 @@
 /Update_Installation_Log.txt
 /Windows11
 *.log
+/ExtractedUpdates/**/*.cab
+/ExtractedUpdates/**/*.msu
+/ExtractedUpdates/**/*.exe
