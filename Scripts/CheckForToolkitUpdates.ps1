@@ -35,7 +35,8 @@ try {
     
     # Location of version info
     # Using the actual GitHub repository for VenimK/Win11DeploymentToolkit
-    $versionInfoUrl = "https://raw.githubusercontent.com/VenimK/Win11DeploymentToolkit/main/version.json"
+    # Note: The branch name might need to be adjusted based on your repository structure (main, master, etc.)
+    $versionInfoUrl = "https://raw.githubusercontent.com/VenimK/Win11DeploymentToolkit/master/version.json"
     
     # For demonstration purposes, we'll use the local file as a fallback
     $localVersionInfoPath = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "version.json"
@@ -75,17 +76,21 @@ try {
         }
         catch {
             Write-Host "Could not connect to online update server: $($_.Exception.Message)" -ForegroundColor Yellow
-            Write-Host "This is expected if the GitHub repository hasn't been set up yet." -ForegroundColor Yellow
+            Write-Host "This is expected if the version.json file hasn't been uploaded to your GitHub repository yet." -ForegroundColor Yellow
             Write-Host "Falling back to local version information..." -ForegroundColor Yellow
             
             # Fall back to the local version file for demonstration
             if (Test-Path -Path $localVersionInfoPath) {
                 $versionInfo = Get-Content -Path $localVersionInfoPath -Raw | ConvertFrom-Json
                 Write-Host "Using local version information for demonstration." -ForegroundColor Yellow
-                Write-Host "`nIMPORTANT: In a production environment, you would need to:" -ForegroundColor Cyan
-                Write-Host "1. Ensure your GitHub repository at https://github.com/VenimK/Win11DeploymentToolkit is accessible" -ForegroundColor Cyan
-                Write-Host "2. Upload the version.json file to the main branch of the repository" -ForegroundColor Cyan
-                Write-Host "3. Update the version.json file whenever you release a new version" -ForegroundColor Cyan
+                Write-Host "`nIMPORTANT: To make the online update checker work, you need to:" -ForegroundColor Cyan
+                Write-Host "1. Upload the version.json file to your GitHub repository at:" -ForegroundColor Cyan
+                Write-Host "   https://github.com/VenimK/Win11DeploymentToolkit" -ForegroundColor White
+                Write-Host "2. Make sure it's in the master branch (or update the script if using a different branch)" -ForegroundColor Cyan
+                Write-Host "3. The file should be accessible at:" -ForegroundColor Cyan
+                Write-Host "   $versionInfoUrl" -ForegroundColor White
+                Write-Host "4. Update the version.json file whenever you release a new version" -ForegroundColor Cyan
+                Write-Host "`nOnce uploaded, the update checker will automatically use the online version information." -ForegroundColor Green
             }
             else {
                 throw "Could not access version information from any source."
