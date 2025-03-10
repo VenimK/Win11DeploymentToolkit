@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 11 Deployment Toolkit - Documentation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #0078d7;
+            border-bottom: 2px solid #0078d7;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #0078d7;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #333;
+            margin-top: 25px;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+        }
+        .note {
+            background-color: #e6f7ff;
+            border-left: 4px solid #0078d7;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #fff8e6;
+            border-left: 4px solid #ff9800;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Windows 11 Deployment Toolkit</h1>
+    <p>This documentation provides detailed information about the Windows 11 Deployment Toolkit, which allows you to perform Windows 11 upgrades while preserving all data, check system compatibility, extract and install updates, and create custom answer files.</p>
+    
+    <h2>Table of Contents</h2>
+    <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#upgrade">Windows 11 Upgrade</a></li>
+        <li><a href="#compatibility">System Compatibility Check</a></li>
+        <li><a href="#updates">Update Extraction</a></li>
+        <li><a href="#install-updates">Update Installation</a></li>
+        <li><a href="#answer">Custom Answer Files</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ul>
+    
+    <h2 id="overview">Overview</h2>
+    <p>The Windows 11 Deployment Toolkit is a comprehensive set of scripts and tools designed to streamline the process of upgrading to Windows 11. It includes:</p>
+    <ul>
+        <li>Upgrade-only installation that preserves all files, apps, and settings</li>
+        <li>System compatibility checker for Windows 11 requirements</li>
+        <li>Update extraction tool to get the latest updates from Windows 11 ISO</li>
+        <li>Update installation tool to apply extracted updates to systems</li>
+        <li>Custom answer file creation for automated installations</li>
+        <li>User-friendly interface with multiple launch options</li>
+    </ul>
+    
+    <h2 id="upgrade">Windows 11 Upgrade</h2>
+    <p>The toolkit provides multiple options for upgrading to Windows 11:</p>
+    
+    <h3>Standard Upgrade (DirectUpgrade.bat)</h3>
+    <p>This is the recommended method for most users. It performs an upgrade-only installation that preserves all files, apps, and settings.</p>
+    <div class="note">
+        <strong>Note:</strong> No drives will be formatted during this process.
+    </div>
+    <p>Key features:</p>
+    <ul>
+        <li>Automatically finds and mounts the Windows 11 ISO</li>
+        <li>Runs setup with upgrade-only parameters</li>
+        <li>Disables updates, drivers, and optional features during installation</li>
+        <li>Preserves all user data, installed applications, and settings</li>
+    </ul>
+    
+    <h3>Upgrade with Compatibility Bypass (RunUpgradeAsAdmin.bat)</h3>
+    <p>This method is useful for systems that don't fully meet Windows 11 requirements but you still want to upgrade them.</p>
+    <div class="warning">
+        <strong>Warning:</strong> Using compatibility bypasses is not officially supported by Microsoft and may result in an unsupported configuration.
+    </div>
+    <p>Key features:</p>
+    <ul>
+        <li>Includes bypass flags for TPM, CPU, RAM, and Secure Boot checks</li>
+        <li>Uses PowerShell with elevated privileges</li>
+        <li>Still preserves all user data during the upgrade</li>
+    </ul>
+    
+    <h2 id="compatibility">System Compatibility Check</h2>
+    <p>Before upgrading to Windows 11, it's essential to check if your system meets the requirements. The compatibility checker (RunCompatibilityCheck.bat) verifies:</p>
+    <ul>
+        <li>TPM 2.0 support</li>
+        <li>CPU compatibility (Intel 8th gen+ or AMD Ryzen 3000+)</li>
+        <li>Minimum RAM requirement (4GB+)</li>
+        <li>Secure Boot status</li>
+        <li>Storage requirements (64GB+)</li>
+    </ul>
+    <p>The checker provides detailed output with color-coded results and logs the findings to a file for future reference.</p>
+    
+    <h3>Compatibility Requirements</h3>
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Requirement</th>
+            <th>Notes</th>
+        </tr>
+        <tr>
+            <td>Processor</td>
+            <td>1 GHz or faster with 2+ cores on a compatible 64-bit processor</td>
+            <td>Intel 8th gen+, AMD Ryzen 3000+</td>
+        </tr>
+        <tr>
+            <td>RAM</td>
+            <td>4 GB or greater</td>
+            <td>8 GB+ recommended</td>
+        </tr>
+        <tr>
+            <td>Storage</td>
+            <td>64 GB or greater</td>
+            <td>Additional storage required for updates</td>
+        </tr>
+        <tr>
+            <td>TPM</td>
+            <td>Trusted Platform Module (TPM) version 2.0</td>
+            <td>Must be enabled in BIOS/UEFI</td>
+        </tr>
+        <tr>
+            <td>Secure Boot</td>
+            <td>Capable of Secure Boot</td>
+            <td>Must be enabled in BIOS/UEFI</td>
+        </tr>
+    </table>
+    
+    <h2 id="updates">Update Extraction</h2>
+    <p>The Update Extraction tool (RunUpdateExtractor.bat) allows you to extract the latest updates from a Windows 11 ISO without performing a full installation. This is useful for:</p>
+    <ul>
+        <li>Updating existing Windows installations</li>
+        <li>Creating a repository of Windows updates</li>
+        <li>Applying specific updates to systems that need them</li>
+    </ul>
+    
+    <h3>Types of Updates Extracted</h3>
+    <ul>
+        <li>Cumulative updates (.msu files)</li>
+        <li>Component updates (.cab files)</li>
+        <li>Security patches</li>
+        <li>Feature updates</li>
+    </ul>
+    
+    <div class="note">
+        <strong>Note:</strong> Some updates may not be compatible with all Windows versions. For example, Internet Explorer components may fail to install on newer Windows versions where IE has been deprecated.
+    </div>
+    
+    <h2 id="install-updates">Update Installation</h2>
+    <p>The Update Installation tool (RunUpdateInstaller.bat) allows you to install the updates that were extracted from the Windows 11 ISO. This tool provides a flexible way to apply updates to systems without performing a full Windows 11 upgrade.</p>
+    
+    <h3>Installation Options</h3>
+    <p>The update installer provides several options for installing updates:</p>
+    <ul>
+        <li><strong>Install all updates</strong> - Installs all extracted .msu and .cab files</li>
+        <li><strong>Install only MSU updates</strong> - Installs only the Windows Update packages (.msu files)</li>
+        <li><strong>Install only CAB updates</strong> - Installs only the component packages (.cab files)</li>
+        <li><strong>Select updates to install</strong> - Allows you to choose specific updates to install</li>
+    </ul>
+    
+    <h3>Smart Error Handling</h3>
+    <p>The update installer includes intelligent error handling features:</p>
+    <ul>
+        <li>Automatically detects Internet Explorer-related updates that might fail on newer systems</li>
+        <li>Offers to skip problematic updates to avoid installation errors</li>
+        <li>Provides detailed error codes and explanations for failed updates</li>
+        <li>Option to continue installation even if some updates fail</li>
+    </ul>
+    
+    <h3>Reboot Management</h3>
+    <p>After installing updates, a system restart is often required. The update installer provides several options for handling reboots:</p>
+    <ul>
+        <li><strong>Automatic reboot</strong> - Automatically restarts the system after all updates are installed</li>
+        <li><strong>Prompt before reboot</strong> - Asks for confirmation before restarting</li>
+        <li><strong>No automatic reboot</strong> - Leaves the system running and lets you restart manually</li>
+    </ul>
+    
+    <h3>Installation Process</h3>
+    <p>The update installation process follows these steps:</p>
+    <ol>
+        <li>Scans the ExtractedUpdates folder for .msu and .cab files</li>
+        <li>Presents installation options to the user</li>
+        <li>Installs each selected update one by one</li>
+        <li>Provides real-time feedback on installation progress</li>
+        <li>Generates a summary of successful, skipped, and failed updates</li>
+        <li>Handles system restart based on user preference</li>
+    </ol>
+    
+    <div class="note">
+        <strong>Note:</strong> The update installer requires administrator privileges to install updates. Make sure to run it with elevated permissions.
+    </div>
+    
+    <h2 id="answer">Custom Answer Files</h2>
+    <p>The Answer File Creator (CreateBasicAnswerFile.ps1) allows you to create custom answer files for automated Windows 11 installations. These files can be used to:</p>
+    <ul>
+        <li>Automate the installation process</li>
+        <li>Specify user account, computer name, and other settings</li>
+        <li>Skip OOBE screens and prompts</li>
+        <li>Configure regional settings</li>
+    </ul>
+    
+    <h3>Types of Answer Files</h3>
+    <ul>
+        <li><strong>Standard Installation</strong> - For clean installations (will format drives)</li>
+        <li><strong>Upgrade-Only Installation</strong> - Preserves all data during upgrade</li>
+    </ul>
+    
+    <div class="warning">
+        <strong>Warning:</strong> Be careful when using standard installation answer files as they will format the target drive. Always use the upgrade-only version if you want to preserve data.
+    </div>
+    
+    <h2 id="troubleshooting">Troubleshooting</h2>
+    
+    <h3>Common Issues and Solutions</h3>
+    
+    <h4>Upgrade Process Exits with Error</h4>
+    <p>If the Windows 11 upgrade process exits with an error code (e.g., -1047526912), it may indicate compatibility issues. Try the following:</p>
+    <ol>
+        <li>Run the compatibility checker to identify specific issues</li>
+        <li>Use the upgrade with compatibility bypass option</li>
+        <li>Check if TPM and Secure Boot are enabled in BIOS/UEFI</li>
+        <li>Ensure your system meets the minimum hardware requirements</li>
+    </ol>
+    
+    <h4>Update Installation Errors</h4>
+    <p>When installing extracted updates, you may encounter errors like "The specified package is not applicable to this image" (0x800f0955, 0x800f081e). This typically means:</p>
+    <ol>
+        <li>The update is not compatible with your Windows version</li>
+        <li>There's a language mismatch between the update and your system</li>
+        <li>The update is for a component that doesn't exist on your system (e.g., Internet Explorer on newer Windows versions)</li>
+    </ol>
+    <p>Solution: Use the update installer's smart error handling features to skip incompatible updates and focus on installing compatible ones.</p>
+    
+    <h4>No PowerShell Window Appears</h4>
+    <p>If no PowerShell window appears when running scripts, it may be due to:</p>
+    <ol>
+        <li>Windows security settings blocking script execution</li>
+        <li>UAC prompts being hidden behind other windows</li>
+        <li>PowerShell execution policy restrictions</li>
+    </ol>
+    <p>Solutions:</p>
+    <ul>
+        <li>Right-click the batch file and select "Run as administrator"</li>
+        <li>Check Windows11_Upgrade_Log.txt for details</li>
+        <li>Try using the DirectUpgrade.bat which uses a simpler approach</li>
+    </ul>
+    
+    <h3>Log Files</h3>
+    <p>The toolkit creates several log files that can help with troubleshooting:</p>
+    <ul>
+        <li><strong>Windows11_Upgrade_Log.txt</strong> - Log of the upgrade process</li>
+        <li><strong>Windows11_Compatibility_Check.txt</strong> - Results of the compatibility check</li>
+        <li><strong>Update_Extraction_Log.txt</strong> - Log of the update extraction process</li>
+        <li><strong>Update_Installation_Log.txt</strong> - Log of the update installation process</li>
+        <li><strong>AnswerFile_Creation_Log.txt</strong> - Log of the answer file creation process</li>
+    </ul>
+    
+    <hr>
+    <p><em>Windows 11 Deployment Toolkit - Created 2025</em></p>
+</body>
+</html>
