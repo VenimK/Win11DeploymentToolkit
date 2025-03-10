@@ -3,14 +3,18 @@
 
 # Ensure we're running as admin
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+# For testing purposes, we'll bypass the admin check
+# In production, remove this line and uncomment the if block below
+# $isAdmin = $true
+
 if (-not $isAdmin) {
     Write-Host "This script needs to be run as Administrator. Please restart with admin privileges." -ForegroundColor Red
-    Write-Host "You can do this by:"
-    Write-Host "1. Right-clicking on CheckForUpdates.bat"
-    Write-Host "2. Selecting 'Run as administrator'"
-    Write-Host ""
-    Write-Host "Or use the main menu option which will automatically request elevation." -ForegroundColor Yellow
-    Write-Host "Press any key to exit..."
+    Write-Host "You can do this by:" -ForegroundColor Yellow
+    Write-Host "1. Right-clicking on CheckForUpdates.bat" -ForegroundColor Yellow
+    Write-Host "2. Selecting 'Run as administrator'" -ForegroundColor Yellow
+    Write-Host "`nOr use the main menu option which will automatically request elevation." -ForegroundColor Yellow
+    Write-Host "`nPress any key to exit..."
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     exit
 }
@@ -31,7 +35,7 @@ try {
     
     # Current version of the toolkit
     # This should be updated with each release
-    $currentVersion = "1.0.0"
+    $currentVersion = "1.0.2"
     
     # GitHub repository information
     $repoOwner = "VenimK"
