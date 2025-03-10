@@ -5,6 +5,11 @@
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
     Write-Host "This script needs to be run as Administrator. Please restart with admin privileges." -ForegroundColor Red
+    Write-Host "You can do this by:"
+    Write-Host "1. Right-clicking on CheckForUpdates.bat"
+    Write-Host "2. Selecting 'Run as administrator'"
+    Write-Host ""
+    Write-Host "Or use the main menu option which will automatically request elevation." -ForegroundColor Yellow
     Write-Host "Press any key to exit..."
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     exit
@@ -29,8 +34,8 @@ try {
     $currentVersion = "1.0.0"
     
     # Location of version info
-    # In a real implementation, this would be a URL to a hosted version.json file
-    $versionInfoUrl = "https://raw.githubusercontent.com/windows11toolkit/main/version.json"
+    # Using the actual GitHub repository for VenimK/Win11DeploymentToolkit
+    $versionInfoUrl = "https://raw.githubusercontent.com/VenimK/Win11DeploymentToolkit/main/version.json"
     
     # For demonstration purposes, we'll use the local file as a fallback
     $localVersionInfoPath = Join-Path -Path (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)) -ChildPath "version.json"
@@ -70,12 +75,17 @@ try {
         }
         catch {
             Write-Host "Could not connect to online update server: $($_.Exception.Message)" -ForegroundColor Yellow
+            Write-Host "This is expected if the GitHub repository hasn't been set up yet." -ForegroundColor Yellow
             Write-Host "Falling back to local version information..." -ForegroundColor Yellow
             
             # Fall back to the local version file for demonstration
             if (Test-Path -Path $localVersionInfoPath) {
                 $versionInfo = Get-Content -Path $localVersionInfoPath -Raw | ConvertFrom-Json
                 Write-Host "Using local version information for demonstration." -ForegroundColor Yellow
+                Write-Host "`nIMPORTANT: In a production environment, you would need to:" -ForegroundColor Cyan
+                Write-Host "1. Ensure your GitHub repository at https://github.com/VenimK/Win11DeploymentToolkit is accessible" -ForegroundColor Cyan
+                Write-Host "2. Upload the version.json file to the main branch of the repository" -ForegroundColor Cyan
+                Write-Host "3. Update the version.json file whenever you release a new version" -ForegroundColor Cyan
             }
             else {
                 throw "Could not access version information from any source."

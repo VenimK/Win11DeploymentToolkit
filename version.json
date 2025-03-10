@@ -1,8 +1,8 @@
 {
     "version": "1.1.0",
-    "releaseDate": "2025-03-01",
-    "downloadUrl": "https://github.com/windows11toolkit/releases/latest",
-    "changelogUrl": "https://github.com/windows11toolkit/releases/latest/changelog",
+    "releaseDate": "2025-03-10",
+    "downloadUrl": "https://github.com/VenimK/Win11DeploymentToolkit/releases/latest",
+    "changelogUrl": "https://github.com/VenimK/Win11DeploymentToolkit/releases/latest/changelog",
     "changes": [
         "Added drive letter independence for better portability",
         "Fixed PowerShell lint warnings and improved code quality",
