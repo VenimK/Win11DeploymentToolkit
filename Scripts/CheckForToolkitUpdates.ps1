@@ -32,7 +32,7 @@ try {
     
     # Current version of the toolkit
     # This should be updated with each release
-    $currentVersion = "1.0.2"
+    $currentVersion = "1.2.1"
     
     # GitHub repository information
     $repoOwner = "VenimK"
